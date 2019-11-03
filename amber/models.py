@@ -36,34 +36,38 @@ class BaseModel(models.Model):
         instance._loaded_values = dict(zip(field_names, values))
         return instance
 
-    def save(self, *args, **kwargs):
-        if reversion.is_active():
-            if not reversion.get_comment():
-                changes = []
-                if not getattr(self, '_loaded_values', None):
-                    changes.append({'added': {}})
-                else:
-                    fields = [
-                        k for k in self._loaded_values
-                        if k not in self.revision_message_ignore and self._loaded_values[k] != getattr(self, k, None)]
-                    changes.append({'changed': {'fields': fields}})
+    # def save(self, *args, **kwargs):
+        # if reversion.is_active():
+        #     if not reversion.get_comment():
+        #         changes = []
+        #         if not getattr(self, '_loaded_values', None):
+        #             changes.append({'added': {}})
+        #         else:
+        #             fields = [
+        #                 k for k in self._loaded_values
+        #                 if k not in self.revision_message_ignore and self._loaded_values[k] != getattr(self, k, None)]
+        #             changes.append({'changed': {'fields': fields}})
 
-                reversion.set_comment(json.dumps(changes))
-        super().save(*args, **kwargs)
+        #         reversion.set_comment(json.dumps(changes))
+        # super().save(*args, **kwargs)
 
     class Meta:
         abstract = True
 
+
 class Car(BaseModel):
-	STYLES = (
-		('suv', 'SUV'),
-		('sed', 'Sedan'),
-		('coup', 'Coupe'),
-		('semi', 'Semi'),
-		('pick', 'Pickup'),
-		('moto', 'Motorcycle'),
-		('bus', 'Bus'),
-	)
-	color = models.CharField(max_length=20)
-	lic = models.CharField(max_length=20)
-	style = models.CharField(max_length=10, choices=STYLES)
+    STYLES = (
+	('suv', 'SUV'),
+	('sed', 'Sedan'),
+	('coup', 'Coupe'),
+	('semi', 'Semi'),
+	('pick', 'Pickup'),
+	('moto', 'Motorcycle'),
+	('bus', 'Bus'),
+    )
+    color = models.CharField(max_length=20)
+    lic = models.CharField(max_length=20)
+    style = models.CharField(max_length=10, choices=STYLES)
+    
+    def __str__(self):
+        return "{} {}".format(self.color, self.style)
