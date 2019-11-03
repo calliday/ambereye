@@ -1,0 +1,4 @@
+*.gz
+__pycache__
+data
+.ssr/
