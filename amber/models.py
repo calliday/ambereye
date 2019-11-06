@@ -71,3 +71,10 @@ class Car(BaseModel):
     
     def __str__(self):
         return "{} {}".format(self.color, self.style)
+	
+
+class CarPlacement(BaseModel):
+    car = models.ForeignKey('Car', on_delete=models.CASCADE)
+    latitude = models.FloatField(null=True, blank=True)
+    longitude = models.FloatField(null=True, blank=True)
+    
