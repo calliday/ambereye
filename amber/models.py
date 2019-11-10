@@ -66,15 +66,14 @@ class Car(BaseModel):
 	('bus', 'Bus'),
     )
     color = models.CharField(max_length=20)
-    lic = models.CharField(max_length=20)
+    license_plate = models.CharField(max_length=20)
     style = models.CharField(max_length=10, choices=STYLES)
-    
+
     def __str__(self):
         return "{} {}".format(self.color, self.style)
-	
+
 
 class CarPlacement(BaseModel):
     car = models.ForeignKey('Car', on_delete=models.CASCADE)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    
