@@ -3,7 +3,7 @@ from amber.models import Car, CarPlacement
 
 # Register your models here.
 # admin.site.register(Car)
-admin.site.register(CarPlacement)
+# admin.site.register(CarPlacement)
 
 class BaseAdmin(admin.ModelAdmin):
     # readonly_fields = ('created_at', 'updated_at')
