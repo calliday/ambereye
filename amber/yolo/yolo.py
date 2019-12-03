@@ -94,6 +94,11 @@ for output in layerOutputs:
 			boxes.append([x, y, int(width), int(height)])
 			confidences.append(float(confidence))
 			classIDs.append(classID)
+			
+			# showing each cropped section
+			cropped = image[y:(y + int(height)), x:(x + int(width))]
+			cv2.imshow("cropped", cropped)
+			cv2.waitKey(0)
 
 # apply non-maxima suppression to suppress weak, overlapping bounding
 # boxes

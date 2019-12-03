@@ -119,6 +119,8 @@ while True:
 				x = int(centerX - (width / 2))
 				y = int(centerY - (height / 2))
 
+				# CUSTOM: prevent other objects besides cars from being
+				# processed
 				if LABELS[classID] != 'car':
 					continue
 
@@ -127,6 +129,12 @@ while True:
 				boxes.append([x, y, int(width), int(height)])
 				confidences.append(float(confidence))
 				classIDs.append(classID)
+				
+				# CUSTOM: crop each object TODO
+				# cropped = frame[y, y + int(height), x, x + int(width)]
+				# cv2.imshow("cropped", cropped)
+				# cv2.waitKey(0)
+				
 
 	# apply non-maxima suppression to suppress weak, overlapping
 	# bounding boxes
