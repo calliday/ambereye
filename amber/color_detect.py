@@ -50,28 +50,28 @@ def get_colors(image, number_of_colors, show_chart):
 	labels = clf.fit_predict(modified_image)
 	
 	counts = Counter(labels)
-	print("counts:", counts)
+	##print("counts:", counts)
 	key = counts.most_common(1)
 	key = key[0][0]
-	print("key:", key)
+	##print("key:", key)
 
 	center_colors = clf.cluster_centers_
-	print("center_colors:", center_colors)
-	print("center_colors[0]:", center_colors[key])
+	##print("center_colors:", center_colors)
+	##print("center_colors[0]:", center_colors[key])
 	# We get ordered colors by iterating through the keys
 	ordered_colors = [center_colors[i] for i in counts.keys()]
-	print(ordered_colors)
+	#print(ordered_colors)
 	hex_colors = [RGB2HEX(ordered_colors[i]) for i in counts.keys()]
 	rgb_colors = [ordered_colors[i] for i in counts.keys()]
 	
 	car_color = center_colors[key]
-	print(car_color)
-	print(hex_colors[0])
+	##print(car_color)
+	##print(hex_colors[0])
 	r = car_color[0]
 	g = car_color[1]
 	b = car_color[2]
 	
-	print(min(colors.items(), key=NearestColorKey((r, g, b))))
+	print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
 		
 	if (show_chart):
 		plt.figure(figsize = (8, 6))
@@ -79,5 +79,5 @@ def get_colors(image, number_of_colors, show_chart):
 		plt.show()
 	return rgb_colors
 
-get_colors(get_image('car_cropped.jpg'), 3, True)
+#get_colors(get_image('car_cropped.jpg'), 3, True)
 	
