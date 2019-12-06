@@ -9,6 +9,10 @@ import time
 import cv2
 import os
 
+# for camera work
+from picamera.array import PiRGBArray
+from picamera import PiCamera
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--input", required=True,
@@ -45,7 +49,19 @@ ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 # initialize the video stream, pointer to output video file, and
 # frame dimensions
-vs = cv2.VideoCapture(args["input"])
+streamType = args["input"]
+camera = None
+if (streamType = "camera")
+	camera = PiCamera();
+	camera.resolution = (1920, 1080)
+	camera.framerate = 29
+	rawCapture = PiRGBArray(camera, size=(1920, 1080))
+
+	# allow camera to warm up
+	time.sleep(0.1)
+else
+	vs = cv2.VideoCapture(args["input"])
+
 writer = None
 (W, H) = (None, None)
 
