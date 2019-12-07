@@ -2,6 +2,8 @@
 # python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
 
 # import the necessary packages
+from imutils.video import VideoStream
+from collections import deque
 import numpy as np
 import argparse
 import imutils
@@ -9,14 +11,11 @@ import time
 import cv2
 import os
 
+# custom functions
+from color_detect import get_colors
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--input", required=True,
-	help="path to input video")
-ap.add_argument("-o", "--output", required=True,
-	help="path to output video")
-ap.add_argument("-y", "--yolo", required=True,
-	help="base path to YOLO directory")
 ap.add_argument("-c", "--confidence", type=float, default=0.5,
 	help="minimum probability to filter weak detections")
 ap.add_argument("-t", "--threshold", type=float, default=0.3,
@@ -24,7 +23,7 @@ ap.add_argument("-t", "--threshold", type=float, default=0.3,
 args = vars(ap.parse_args())
 
 # load the COCO class labels our YOLO model was trained on
-labelsPath = os.path.sep.join([args["yolo"], "coco.names"])
+labelsPath = os.path.sep.join("yolo/yolo-coco/coco.names")
 LABELS = open(labelsPath).read().strip().split("\n")
 
 # initialize a list of colors to represent each possible class label
@@ -45,34 +44,21 @@ ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
 # initialize the video stream, pointer to output video file, and
 # frame dimensions
-vs = cv2.VideoCapture(args["input"])
+# old: vs = cv2.VideoCapture(args["input"])
+vs = VideoStream(src=0).start()
+
+# allow camera to warm up
+time.sleep(0.1)
 
 writer = None
 (W, H) = (None, None)
 
-# try to determine the total number of frames in the video file
-try:
-	prop = cv2.cv.CV_CAP_PROP_FRAME_COUNT if imutils.is_cv2() \
-		else cv2.CAP_PROP_FRAME_COUNT
-	total = int(vs.get(prop))
-	print("[INFO] {} total frames in video".format(total))
-
-# an error occurred while trying to determine the total
-# number of frames in the video file
-except:
-	print("[INFO] could not determine # of frames in video")
-	print("[INFO] no approx. completion time can be provided")
-	total = -1
-
 # loop over frames from the video file stream
 while True:
-	# read the next frame from the file
-	(grabbed, frame) = vs.read()
+	# TODO insert a key listener for Q to quit the program
 
-	# if the frame was not grabbed, then we have reached the end
-	# of the stream
-	if not grabbed:
-		break
+	# read the next frame from the file
+	frame = vs.read()
 
 	# if the frame dimensions are empty, grab them
 	if W is None or H is None:
@@ -132,7 +118,7 @@ while True:
 				classIDs.append(classID)
 				
 				# CUSTOM: crop each object TODO
-				# cropped = frame[y, y + int(height), x, x + int(width)]
+				cropped = frame[y, y + int(height), x, x + int(width)]
 				get_colors(cropped, 3, False)
 
 	# apply non-maxima suppression to suppress weak, overlapping
@@ -156,24 +142,6 @@ while True:
 			cv2.putText(frame, text, (x, y - 5),
 				cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
 
-	# check if the video writer is None
-	if writer is None:
-		# initialize our video writer
-		fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-		writer = cv2.VideoWriter(args["output"], fourcc, 30,
-			(frame.shape[1], frame.shape[0]), True)
-
-		# some information on processing single frame
-		if total > 0:
-			elap = (end - start)
-			print("[INFO] single frame took {:.4f} seconds".format(elap))
-			print("[INFO] estimated total time to finish: {:.4f}".format(
-				elap * total))
-
-	# write the output frame to disk
-	writer.write(frame)
-
 # release the file pointers
 print("[INFO] cleaning up...")
-writer.release()
 vs.release()
