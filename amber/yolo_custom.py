@@ -55,7 +55,11 @@ writer = None
 
 # loop over frames from the video file stream
 while True:
-	# TODO insert a key listener for Q to quit the program
+	# key listener for q to quit the program
+	# if the 'q' key is pressed, stop the loop
+	key = cv2.waitKey(1) & 0xFF
+	if key == ord("q"):
+		break
 
 	# read the next frame from the file
 	frame = vs.read()
@@ -144,4 +148,5 @@ while True:
 
 # release the file pointers
 print("[INFO] cleaning up...")
+vs.stop()
 vs.release()
