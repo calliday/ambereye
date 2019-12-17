@@ -5,6 +5,7 @@ import cv2
 from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
+from amber.color_names import colors_ben
 
 colors = {
 	'red': (255,0,0),
@@ -41,14 +42,14 @@ def get_image(image_path):
 	image = cv2.imread(image_path)
 	image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 	return image
-	
+
 def get_colors(image, number_of_colors, show_chart):
 	modified_image = cv2.resize(image, (120, 90), interpolation = cv2.INTER_AREA)
 	modified_image = modified_image.reshape(modified_image.shape[0]*modified_image.shape[1], 3)
 
 	clf = KMeans(n_clusters = number_of_colors)
 	labels = clf.fit_predict(modified_image)
-	
+
 	counts = Counter(labels)
 	##print("counts:", counts)
 	key = counts.most_common(1)
@@ -63,16 +64,18 @@ def get_colors(image, number_of_colors, show_chart):
 	#print(ordered_colors)
 	hex_colors = [RGB2HEX(ordered_colors[i]) for i in counts.keys()]
 	rgb_colors = [ordered_colors[i] for i in counts.keys()]
-	
+
 	car_color = center_colors[key]
 	##print(car_color)
 	##print(hex_colors[0])
-	r = car_color[0]
-	g = car_color[1]
-	b = car_color[2]
-	
-	print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
-		
+	r = int(car_color[0] / 85)
+	g = int(car_color[1] / 85)
+	b = int(car_color[2] / 85)
+
+	print(colors_ben[r][g][b])
+
+	# print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
+
 	if (show_chart):
 		plt.figure(figsize = (8, 6))
 		plt.pie(counts.values(), labels = hex_colors, colors = hex_colors)
@@ -80,4 +83,3 @@ def get_colors(image, number_of_colors, show_chart):
 	return rgb_colors
 
 #get_colors(get_image('car_cropped.jpg'), 3, True)
-	
