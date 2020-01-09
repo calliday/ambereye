@@ -67,7 +67,7 @@ while True:
 	frame = vs.read()
 	frame = imutils.rotate(frame, angle=180)
 	#frame = white_balance(frame)
-	
+
 	cv2.imshow("frame", frame)
 	#cv2.waitKey(0);
 
@@ -127,13 +127,13 @@ while True:
 				boxes.append([x, y, int(width), int(height)])
 				confidences.append(float(confidence))
 				classIDs.append(classID)
-				
+
 				# CshoUSTOM: crop each object TODO
 				cropped = frame[y:y + int(height), x:x + int(width)]
 				if cropped.shape[0] < 1 or cropped.shape[1] < 1:
 					continue
-				
-				get_colors(cropped, 3, True)
+
+				color = get_colors(cropped, 3, False)
 				cv2.imshow("Frame", cropped)
 				cv2.waitKey(0);
 

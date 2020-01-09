@@ -7,6 +7,11 @@ from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
 from color_names import colors_ben, colors_caleb, colors_after_effects
 
+from .models import (
+    Car,
+	CarPlacement
+)
+
 colors = {
 	'red': (255,0,0),
 	'dark red': (63,0,0),
@@ -72,12 +77,16 @@ def get_colors(image, number_of_colors, show_chart):
 	g = int(round(car_color[1] / 85))
 	b = int(round(car_color[2] / 85))
 
-	
 	print("AE: {}, C: {}, B: {}".format(
 		colors_after_effects[r][g][b],
 		colors_caleb[r][g][b],
 		colors_ben[r][g][b]
 	))
+
+	car, _created = Car.objects.get_or_create(color=colors_ben, license_plate=0)
+	print(car)
+	entry, _cre = CarPlacement.objects.get_or_create(car=car)
+	print(entry)
 
 	# print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
 
@@ -86,8 +95,8 @@ def get_colors(image, number_of_colors, show_chart):
 		plt.pie(counts.values(), labels = hex_colors, colors = hex_colors)
 		plt.show()
 	return rgb_colors
-	
-	
+
+
 def white_balance(img):
     result = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
     avg_a = np.average(result[:, :, 1])
