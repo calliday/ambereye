@@ -12,7 +12,7 @@ import cv2
 import os
 
 # custom functions
-from color_detect import get_colors
+from color_detect import get_colors, white_balance
 
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
@@ -23,7 +23,7 @@ ap.add_argument("-t", "--threshold", type=float, default=0.3,
 args = vars(ap.parse_args())
 
 # load the COCO class labels our YOLO model was trained on
-labelsPath = os.path.sep.join("yolo/yolo-coco/coco.names")
+labelsPath = "yolo/yolo-coco/coco.names"
 LABELS = open(labelsPath).read().strip().split("\n")
 
 # initialize a list of colors to represent each possible class label
@@ -32,8 +32,8 @@ COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
 	dtype="uint8")
 
 # derive the paths to the YOLO weights and model configuration
-weightsPath = os.path.sep.join([args["yolo"], "yolov3.weights"])
-configPath = os.path.sep.join([args["yolo"], "yolov3.cfg"])
+weightsPath = "yolo/yolo-coco/yolov3.weights"
+configPath = "yolo/yolo-coco/yolov3.cfg"
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
@@ -46,23 +46,30 @@ ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 # frame dimensions
 # old: vs = cv2.VideoCapture(args["input"])
 vs = VideoStream(src=0).start()
+vs.rotation = 180
 
 # allow camera to warm up
-time.sleep(0.1)
+time.sleep(2.0)
 
 writer = None
 (W, H) = (None, None)
 
 # loop over frames from the video file stream
 while True:
+	print("looping")
 	# key listener for q to quit the program
 	# if the 'q' key is pressed, stop the loop
 	key = cv2.waitKey(1) & 0xFF
 	if key == ord("q"):
 		break
 
-	# read the next frame from the file
+	# read the next frame from the stream
 	frame = vs.read()
+	frame = imutils.rotate(frame, angle=180)
+	#frame = white_balance(frame)
+	
+	cv2.imshow("frame", frame)
+	#cv2.waitKey(0);
 
 	# if the frame dimensions are empty, grab them
 	if W is None or H is None:
@@ -121,9 +128,14 @@ while True:
 				confidences.append(float(confidence))
 				classIDs.append(classID)
 				
-				# CUSTOM: crop each object TODO
-				cropped = frame[y, y + int(height), x, x + int(width)]
-				get_colors(cropped, 3, False)
+				# CshoUSTOM: crop each object TODO
+				cropped = frame[y:y + int(height), x:x + int(width)]
+				if cropped.shape[0] < 1 or cropped.shape[1] < 1:
+					continue
+				
+				get_colors(cropped, 3, True)
+				cv2.imshow("Frame", cropped)
+				cv2.waitKey(0);
 
 	# apply non-maxima suppression to suppress weak, overlapping
 	# bounding boxes
@@ -149,4 +161,4 @@ while True:
 # release the file pointers
 print("[INFO] cleaning up...")
 vs.stop()
-vs.release()
+# vs.release()

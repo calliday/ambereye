@@ -5,7 +5,7 @@ import cv2
 from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
-from amber.color_names import colors_ben
+from color_names import colors_ben, colors_caleb, colors_after_effects
 
 colors = {
 	'red': (255,0,0),
@@ -68,11 +68,16 @@ def get_colors(image, number_of_colors, show_chart):
 	car_color = center_colors[key]
 	##print(car_color)
 	##print(hex_colors[0])
-	r = int(car_color[0] / 85)
-	g = int(car_color[1] / 85)
-	b = int(car_color[2] / 85)
+	r = int(round(car_color[0] / 85))
+	g = int(round(car_color[1] / 85))
+	b = int(round(car_color[2] / 85))
 
-	print(colors_ben[r][g][b])
+	
+	print("AE: {}, C: {}, B: {}".format(
+		colors_after_effects[r][g][b],
+		colors_caleb[r][g][b],
+		colors_ben[r][g][b]
+	))
 
 	# print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
 
@@ -81,5 +86,16 @@ def get_colors(image, number_of_colors, show_chart):
 		plt.pie(counts.values(), labels = hex_colors, colors = hex_colors)
 		plt.show()
 	return rgb_colors
+	
+	
+def white_balance(img):
+    result = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    avg_a = np.average(result[:, :, 1])
+    avg_b = np.average(result[:, :, 2])
+    result[:, :, 1] = result[:, :, 1] - ((avg_a - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result[:, :, 2] = result[:, :, 2] - ((avg_b - 128) * (result[:, :, 0] / 255.0) * 1.1)
+    result = cv2.cvtColor(result, cv2.COLOR_LAB2BGR)
+    return result
+
 
 #get_colors(get_image('car_cropped.jpg'), 3, True)

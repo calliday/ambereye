@@ -172,26 +172,26 @@ colors_after_effects = [
     ]
 ]
 
-for r in range(0,4):
-    for g in range(0,4):
-        for b in range(0,4):
-            af = colors_after_effects[r][g][b]
-            caleb = colors_caleb[r][g][b]
-            ben = colors_ben[r][g][b]
-            first_tab = "\t"
-            secont_tab = "\t"
-            if len(af) < 8:
-                first_tab = "\t\t\t"
-            elif len(af) < 16:
-                first_tab = "\t\t"
-            if len(caleb) < 8:
-                second_tab = "\t\t\t"
-            elif len(caleb) < 16:
-                second_tab = "\t\t"
-            print("{}{}|  {}".format(
-                # af,
-                # first_tab,
-                caleb,
-                second_tab,
-                ben
-            ))
+#for r in range(0,4):
+#    for g in range(0,4):
+#        for b in range(0,4):
+#            af = colors_after_effects[r][g][b]
+#            caleb = colors_caleb[r][g][b]
+#            ben = colors_ben[r][g][b]
+#            first_tab = "\t"
+#            secont_tab = "\t"
+#            if len(af) < 8:
+#                first_tab = "\t\t\t"
+#            elif len(af) < 16:
+#                first_tab = "\t\t"
+#            if len(caleb) < 8:
+#                second_tab = "\t\t\t"
+#            elif len(caleb) < 16:
+#                second_tab = "\t\t"
+#            print("{}{}|  {}".format(
+#                # af,
+#                # first_tab,
+#                caleb,
+#                second_tab,
+#                ben
+#            ))

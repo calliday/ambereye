@@ -9,6 +9,8 @@ import time
 import cv2
 import os
 
+from color_detect import get_colors
+
 # construct the argument parse and parse the arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-i", "--input", required=True,
@@ -132,8 +134,9 @@ while True:
 				classIDs.append(classID)
 				
 				# CUSTOM: crop each object TODO
-				# cropped = frame[y, y + int(height), x, x + int(width)]
-				get_colors(cropped, 3, False)
+				cropped = frame[y:y + int(height), x:x + int(width)]
+				if cropped.shape[0] > 1 and cropped.shape[1] > 1:
+					get_colors(cropped, 3, False)
 
 	# apply non-maxima suppression to suppress weak, overlapping
 	# bounding boxes
