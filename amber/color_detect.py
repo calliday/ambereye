@@ -5,12 +5,9 @@ import cv2
 from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
-from color_names import colors_ben, colors_caleb, colors_after_effects
+from amber.color_names import colors_ben, colors_caleb, colors_after_effects
 
-from .models import (
-    Car,
-	CarPlacement
-)
+
 
 colors = {
 	'red': (255,0,0),
@@ -83,10 +80,10 @@ def get_colors(image, number_of_colors, show_chart):
 		colors_ben[r][g][b]
 	))
 
-	car, _created = Car.objects.get_or_create(color=colors_ben, license_plate=0)
-	print(car)
-	entry, _cre = CarPlacement.objects.get_or_create(car=car)
-	print(entry)
+	#car, _created = Car.objects.get_or_create(color=colors_ben, license_plate=0)
+	#print(car)
+	#entry, _cre = CarPlacement.objects.get_or_create(car=car)
+	#print(entry)
 
 	# print(min(colors.items(), key=NearestColorKey((r, g, b)))[0])
 

@@ -9,6 +9,8 @@ from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
 
+from amber.models import Car
+
 
 def RGB2HEX(color):
 	return "#{:02x}{:02x}{:02x}".format(int(color[0]), int(color[1]), int(color[2]))
@@ -48,4 +50,6 @@ class Command(BaseCommand):
 		parser.add_argument('num_colors', type=int, help="number of colors to display")
 	
 	def handle(self, **options):	
-		get_colors(get_image('./car_cropped.jpg'), options['num_colors'], True)
+		# get_colors(get_image('./car_cropped.jpg'), options['num_colors'], True)
+		self.car, _cre = Car.objects.get_or_create(color="white", license_plate="000", style="suv")
+		
