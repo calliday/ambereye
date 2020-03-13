@@ -5,7 +5,7 @@ import cv2
 from collections import Counter
 from skimage.color import rgb2lab, deltaE_cie76  # scikit-image
 import os
-from color_names import colors_ben, colors_caleb, colors_after_effects
+from amber.color_names import colors_ben, colors_caleb, colors_after_effects
 
 
 
@@ -91,7 +91,7 @@ def get_colors(image, number_of_colors, show_chart):
         plt.figure(figsize = (8, 6))
         plt.pie(counts.values(), labels = hex_colors, colors = hex_colors)
         plt.show()
-    return rgb_colors
+    return colors_ben[r][g][b]
 
 
 def white_balance(img):

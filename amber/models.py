@@ -57,13 +57,13 @@ class BaseModel(models.Model):
 
 class Car(BaseModel):
     STYLES = (
-	('suv', 'SUV'),
-	('sed', 'Sedan'),
-	('coup', 'Coupe'),
-	('semi', 'Semi'),
-	('pick', 'Pickup'),
-	('moto', 'Motorcycle'),
-	('bus', 'Bus'),
+    ('suv', 'SUV'),
+    ('sed', 'Sedan'),
+    ('coup', 'Coupe'),
+    ('semi', 'Semi'),
+    ('pick', 'Pickup'),
+    ('moto', 'Motorcycle'),
+    ('bus', 'Bus'),
     )
     color = models.CharField(max_length=20)
     license_plate = models.CharField(max_length=20, null=True, blank=True)
@@ -80,6 +80,7 @@ class CarPlacement(BaseModel):
     car = models.ForeignKey('Car', on_delete=models.CASCADE)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
+    
     
     def __str__(self):
         return "{} on {} at {}".format(

@@ -1,43 +1,21 @@
-# USAGE
-# python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
-
-import sys
-
-sys.path.append("/home/pi/.local/lib/python3.7/site-packages/")
-
 # import the necessary packages
-from imutils.video import VideoStream
-from collections import deque
 import numpy as np
-import argparse
 import imutils
-import time
 import cv2
 import os
-
-# custom functions
-from color_detect import get_colors, white_balance
+os.chdir("/home/pi/ambereye")
+from CustomThreads import ThreadedCamera
 
 # construct the argument parse and parse the arguments
-ap = argparse.ArgumentParser()
-ap.add_argument("-c", "--confidence", type=float, default=0.5,
-    help="minimum probability to filter weak detections")
-ap.add_argument("-t", "--threshold", type=float, default=0.3,
-    help="threshold when applyong non-maxima suppression")
-args = vars(ap.parse_args())
+args = {"confidence": 0.5, "threshold": 0.3}
 
 # load the COCO class labels our YOLO model was trained on
-labelsPath = "/home/pi/ambereye/amber/yolo/yolo-coco/coco.names"
+labelsPath = "amber/yolo/yolo-coco/coco.names"
 LABELS = open(labelsPath).read().strip().split("\n")
 
-# initialize a list of colors to represent each possible class label
-np.random.seed(42)
-COLORS = np.random.randint(0, 255, size=(len(LABELS), 3),
-    dtype="uint8")
-
 # derive the paths to the YOLO weights and model configuration
-weightsPath = "/home/pi/ambereye/amber/yolo/yolo-coco/yolov3.weights"
-configPath = "/home/pi/ambereye/amber/yolo/yolo-coco/yolov3.cfg"
+weightsPath = "amber/yolo/yolo-coco/yolov3.weights"
+configPath = "amber/yolo/yolo-coco/yolov3.cfg"
 
 # load our YOLO object detector trained on COCO dataset (80 classes)
 # and determine only the *output* layer names that we need from YOLO
@@ -45,36 +23,32 @@ print("[INFO] loading YOLO from disk...")
 net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 ln = net.getLayerNames()
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-print("the server issue is not DarkNet")
 
-# initialize the video stream, pointer to output video file, and
-# frame dimensions
-# old: vs = cv2.VideoCapture(args["input"])
-vs = VideoStream(src=0).start()
-vs.rotation = 180
-
-# allow camera to warm up
-time.sleep(2.0)
-
-writer = None
 (W, H) = (None, None)
+
+# Start camera I/O on another thread
+cam = ThreadedCamera().start()
+
+imgCount = 0
 
 # loop over frames from the video file stream
 while True:
-    print("looping")
+    print("[INFO] new frame...")
     # key listener for q to quit the program
     # if the 'q' key is pressed, stop the loop
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
+        cam.stop()
         break
-
+    
     # read the next frame from the stream
-    frame = vs.read()
-    frame = imutils.rotate(frame, angle=180)
-    #frame = white_balance(frame)
+    frame = cam.read()
 
-#     cv2.imshow("frame", frame)
-    #cv2.waitKey(0);
+    frame = imutils.rotate(frame, angle=180)
+
+    # show the frame
+#         cv2.imshow("frame", frame)
+#         cv2.waitKey(0);
 
     # if the frame dimensions are empty, grab them
     if W is None or H is None:
@@ -86,19 +60,15 @@ while True:
     blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
         swapRB=True, crop=False)
     net.setInput(blob)
-    start = time.time()
-    layerOutputs = net.forward(ln)
-    end = time.time()
+    layerOutputs = net.forward(ln)  # this is the bottleneck
 
-    # initialize our lists of detected bounding boxes, confidences,
+    # initialize our lists of detected confidences,
     # and class IDs, respectively
-    boxes = []
     confidences = []
     classIDs = []
 
     # loop over each of the layer outputs
     for output in layerOutputs:
-        print("output")
         # loop over each of the detections
         for detection in output:
             # extract the class ID and confidence (i.e., probability)
@@ -106,6 +76,11 @@ while True:
             scores = detection[5:]
             classID = np.argmax(scores)
             confidence = scores[classID]
+            
+            # CUSTOM: prevent other objects besides cars from being
+            # processed
+            if LABELS[classID] != 'car':
+                continue
 
             # filter out weak predictions by ensuring the detected
             # probability is greater than the minimum probability
@@ -123,48 +98,23 @@ while True:
                 x = int(centerX - (width / 2))
                 y = int(centerY - (height / 2))
 
-                # CUSTOM: prevent other objects besides cars from being
-                # processed
-                if LABELS[classID] != 'car':
-                    continue
-
                 # update our list of bounding box coordinates,
                 # confidences, and class IDs
-                boxes.append([x, y, int(width), int(height)])
                 confidences.append(float(confidence))
                 classIDs.append(classID)
 
-                # CshoUSTOM: crop each object TODO
+                # CUSTOM: crop each object
                 cropped = frame[y:y + int(height), x:x + int(width)]
+                # if the object 
                 if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                     continue
 
-                color = get_colors(cropped, 3, False)
-#                 cv2.imshow("Frame", cropped)
-#                 cv2.waitKey(0);
-
-    # apply non-maxima suppression to suppress weak, overlapping
-    # bounding boxes
-    idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
-        args["threshold"])
-
-    # ensure at least one detection exists
-    if len(idxs) > 0:
-        # loop over the indexes we are keeping
-        for i in idxs.flatten():
-            # extract the bounding box coordinates
-            (x, y) = (boxes[i][0], boxes[i][1])
-            (w, h) = (boxes[i][2], boxes[i][3])
-
-            # draw a bounding box rectangle and label on the frame
-            color = [int(c) for c in COLORS[classIDs[i]]]
-            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
-            text = "{}: {:.4f}".format(LABELS[classIDs[i]],
-                confidences[i])
-            cv2.putText(frame, text, (x, y - 5),
-                cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
-
-# release the file pointers
-print("[INFO] cleaning up...")
-vs.stop()
-# vs.release()
+                # Save cropped image
+                imwrite("/home/pi/Desktop/car_caps/car" + str(imgCount) + ".jpg", cropped);
+                imgCount += 1
+    
+    
+    
+    
+    
+    
