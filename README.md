@@ -14,3 +14,6 @@ Go to `localhost:8000/admin` in the browser and login
 ### Initial setup
 `python manage.py createsuperuser` to create a user for backend.
 You don't need to add an email.
+
+To run any YOLO detection, you will need to download the weights file from this Google Drive link:
+TBD
