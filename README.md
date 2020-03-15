@@ -16,4 +16,4 @@ Go to `localhost:8000/admin` in the browser and login
 You don't need to add an email.
 
 To run any YOLO detection, you will need to download the weights file from this Google Drive link:
-TBD
+https://drive.google.com/open?id=1Y5nL3_2lZfiirzDjDK3wvLKwAlsIpD0g
