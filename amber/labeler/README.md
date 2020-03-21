@@ -1,4 +1,4 @@
-#Project Setup
+# Project Setup
 
 install pillow for Python 3:
 
