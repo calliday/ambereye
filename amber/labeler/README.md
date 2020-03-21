@@ -8,4 +8,4 @@ and create the csv (because this program just appends):
 
 `targets.csv`
 
-then run the program with 'python3 labeler.py'
+then run the program with `python3 labeler.py`
