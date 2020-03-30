@@ -40,15 +40,14 @@ def run():
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+    
+    # Custom
+    # Is this really all we have to do to set the target CPU to Movidius?
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+    #net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
-    # initialize the video stream, pointer to output video file, and
-    # frame dimensions
-    # old: vs = cv2.VideoCapture(args["input"])
-    # vs = VideoStream(src=0, resolution=(1920,1080)).start()
-#     vs = VideoStream(src=0).start()
-#     vs.rotation = 180
 
     # allow camera to warm up
     time.sleep(2.0)
@@ -165,7 +164,7 @@ def run():
 #                     filename = "images/{}_{}.jpg".format(color, placement)
 #                     cv2.imwrite(filename, cropped)
                     
-                    cv2.imshow("Frame", cropped)
+#                     cv2.imshow("Frame", cropped)
                     cv2.waitKey(0);
 
 #         # apply non-maxima suppression to suppress weak, overlapping

@@ -2,7 +2,7 @@
 # python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
 
 # import the necessary packages
-from amber.CustomThreads import ThreadedCamera
+from amber.CustomThreads import ThreadedCamera, ThreadedLp
 import numpy as np
 import imutils
 import cv2
@@ -29,6 +29,8 @@ def run():
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+    # Set the NCS2 as the preferred CPU for the model
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
@@ -66,7 +68,7 @@ def run():
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
             swapRB=True, crop=False)
         net.setInput(blob)
-        layerOutputs = net.forward(ln)  # this is the bottleneck
+        layerOutputs = net.forward(ln)  # this was the bottleneck, now it is offloaded to the NCS
 
         # initialize our lists of detected confidences,
         # and class IDs, respectively
