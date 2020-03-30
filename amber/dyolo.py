@@ -44,7 +44,7 @@ def run():
     # Custom
     # Is this really all we have to do to set the target CPU to Movidius?
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
-    #net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
 
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -66,21 +66,13 @@ def run():
         
         with picamera.PiCamera() as camera:
             camera.resolution = (2592, 1936)
-            camera.start_preview()
+            # camera.start_preview()
             time.sleep(2)
             with picamera.array.PiRGBArray(camera) as stream:
                 camera.capture(stream, format='bgr')
                 
                 # At this point the image is available as stream.array
                 frame = stream.array
-
-#         # read the next frame from the stream
-#         frame = vs.read()
-#         frame = imutils.rotate(frame, angle=180)
-#         #frame = white_balance(frame)
-
-#         cv2.imshow("frame", frame)
-#         cv2.waitKey(0);
 
         # if the frame dimensions are empty, grab them
         if W is None or H is None:
@@ -145,7 +137,6 @@ def run():
                         continue
                     
                     lp = main(cropped)
-#                     lp = "000"
                     print("license plate:", lp)
 
                     color = get_colors(cropped, 3, False)
@@ -154,18 +145,16 @@ def run():
                         color=color,
                         license_plate=lp,
                         style="sed"
-                    )
+                    ).first()
                     placement = CarPlacement.objects.create(
                         car=car,
                         latitude=0,
                         longitude=0
                     )
                     print("placement:", placement)
-#                     filename = "images/{}_{}.jpg".format(color, placement)
-#                     cv2.imwrite(filename, cropped)
                     
-#                     cv2.imshow("Frame", cropped)
-                    cv2.waitKey(0);
+                    cv2.imwrite("amber/templates/img.jpg", cropped)
+                    #cv2.waitKey(0)
 
 #         # apply non-maxima suppression to suppress weak, overlapping
 #         # bounding boxes

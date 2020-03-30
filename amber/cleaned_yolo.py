@@ -1,29 +1,31 @@
-# USAGE
-# python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
+# YOLO THAT RUNS WITHOUT DJANGO
+# These lines are not needed once integrated with django
+import os
+os.chdir("/home/pi/ambereye/amber")
 
 # import the necessary packages
-from amber.CustomThreads import ThreadedCamera, ThreadedLp
+from CustomThreads import ThreadedCamera
 import numpy as np
 import imutils
 import cv2
-import os
+
 
 # custom functions
-from amber.cleaned_color_detect import get_colors
-from amber.models import Car, CarPlacement
-from amber.lp.Main import main
+# from cleaned_color_detect import get_colors
+# from models import Car, CarPlacement
+# from lp.Main import main
 
 # construct the argument parse and parse the arguments
 def run():
     args = {"confidence": 0.5, "threshold": 0.3}
 
     # load the COCO class labels our YOLO model was trained on
-    labelsPath = "amber/yolo/yolo-coco/coco.names"
+    labelsPath = "yolo/yolo-coco/coco.names"
     LABELS = open(labelsPath).read().strip().split("\n")
 
     # derive the paths to the YOLO weights and model configuration
-    weightsPath = "amber/yolo/yolo-coco/yolov3.weights"
-    configPath = "amber/yolo/yolo-coco/yolov3.cfg"
+    weightsPath = "yolo/yolo-coco/yolov3.weights"
+    configPath = "yolo/yolo-coco/yolov3.cfg"
 
     # load our YOLO object detector trained on COCO dataset (80 classes)
     # and determine only the *output* layer names that we need from YOLO
@@ -31,6 +33,7 @@ def run():
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
     # Set the NCS2 as the preferred CPU for the model
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
@@ -118,33 +121,30 @@ def run():
 
                     # try to find and read license plate
 #                     lp = threading.Thread(target=main(cropped), args=(1,))
-                    lp = main(cropped)
-                    if lp is None:
-                        lp = "000"
+#                     lp = main(cropped)
+#                     if lp is None:
+#                         lp = "000"
 
                     # get the color of the car
-                    color = get_colors(cropped, 3)
+#                     color = get_colors(cropped, 3)
                     
                     # log to the database
-                    car, _created = Car.objects.get_or_create(
-                        color=color,
-                        license_plate=lp,
-                        style="sed"
-                    )
-                    placement = CarPlacement.objects.create(
-                        car=car,
-                        latitude=0,
-                        longitude=0
-                    )
-                    print("placement:", placement)
+#                     car, _created = Car.objects.get_or_create(
+#                         color=color,
+#                         license_plate=lp,
+#                         style="sed"
+#                     )
+#                     placement = CarPlacement.objects.create(
+#                         car=car,
+#                         latitude=0,
+#                         longitude=0
+#                     )
+#                     print("placement:", placement)
                     
 #                     cv2.imshow("Frame", cropped)
 #                     cv2.waitKey(0);
 
-
-    
-    
-    
+run()
     
     
     
