@@ -1,4 +1,4 @@
-f = open("units_new.txt", "w")
+f = open("car_colors.csv", "w")
 temp = {}
 f.write("image_name, class, color,\n")
 for row in range(10):
