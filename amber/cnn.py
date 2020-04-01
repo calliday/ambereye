@@ -159,7 +159,7 @@ print('generators generated')
 
 history = model.fit(train_generator,
                     steps_per_epoch=ntrain // batch_size,
-                    epochs=2,
+                    epochs=64,
                     validation_data=val_generator,
                     validation_steps=nval // batch_size)
 
