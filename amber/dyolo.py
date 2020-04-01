@@ -15,7 +15,7 @@ import picamera
 import picamera.array
 
 # custom functions
-from amber.dcolor_detect import get_colors, white_balance
+from amber.color_detect import get_colors, white_balance
 from amber.models import Car, CarPlacement
 from amber.lp.Main import main
 

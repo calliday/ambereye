@@ -11,9 +11,9 @@ import cv2
 
 
 # custom functions
-# from cleaned_color_detect import get_colors
-# from models import Car, CarPlacement
-# from lp.Main import main
+from color_detect import get_colors
+from models import Car, CarPlacement
+from lp.Main import main
 
 # construct the argument parse and parse the arguments
 def run():
@@ -120,29 +120,28 @@ def run():
                         continue
 
                     # try to find and read license plate
-#                     lp = threading.Thread(target=main(cropped), args=(1,))
-#                     lp = main(cropped)
-#                     if lp is None:
-#                         lp = "000"
-
+                    lp = threading.Thread(target=main(cropped), args=(1,))
+                    lp = main(cropped)
+                    if lp is None:
+                        lp = "000"
                     # get the color of the car
-#                     color = get_colors(cropped, 3)
-                    
+                    color = get_colors(cropped, 3)
+                  
                     # log to the database
-#                     car, _created = Car.objects.get_or_create(
-#                         color=color,
-#                         license_plate=lp,
-#                         style="sed"
-#                     )
-#                     placement = CarPlacement.objects.create(
-#                         car=car,
-#                         latitude=0,
-#                         longitude=0
-#                     )
-#                     print("placement:", placement)
-                    
-#                     cv2.imshow("Frame", cropped)
-#                     cv2.waitKey(0);
+                    car, _created = Car.objects.get_or_create(
+                        color=color,
+                        license_plate=lp,
+                        style="sed"
+                    )
+                    placement = CarPlacement.objects.create(
+                        car=car,
+                        latitude=0,
+                        longitude=0
+                    )
+                    print("placement:", placement)
+                  
+                    cv2.imshow("Frame", cropped)
+                    cv2.waitKey(0);
 
 run()
     
