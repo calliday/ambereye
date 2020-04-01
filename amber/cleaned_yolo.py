@@ -8,12 +8,17 @@ from amber.CustomThreads import ThreadedCamera
 import numpy as np
 import imutils
 import cv2
-
+import os
+from tensorflow.keras.models import load_model
 
 # custom functions
-from amber.color_detect import get_colors
+# from amber.color_detect import get_colors
 from amber.models import Car, CarPlacement
 from amber.lp.Main import main
+
+COLOR_MODEL = load_model('model_keras54.h5')
+COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
+                   'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
 
 # construct the argument parse and parse the arguments
 def run():
@@ -123,7 +128,9 @@ def run():
                     if lp is None:
                         lp = "000"
                     # get the color of the car
-                    color = get_colors(cropped, 3)
+                    # color = get_colors(cropped, 3)
+                    color = get_color(cropped)
+                    print('color is:', color)
 
                     # log to the database
                     car, _created = Car.objects.get_or_create(
@@ -139,3 +146,10 @@ def run():
                     print("placement:", placement)
 #                     cv2.imshow("Frame", cropped)
 #                     cv2.waitKey(0);
+
+
+def get_color(image):
+    cars = np.array([cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)])
+    prediction = COLOR_MODEL.predict(cars)
+    index = np.where(prediction[0] == 1)
+    return COLORS[index[0][0]]
