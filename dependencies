@@ -8,7 +8,7 @@ pip3 install matplotlib
 sudo apt-get install python3-matplotlib
 pip3 install scikit-image
 
-# These are the install steps for opencv
+# These are the install steps for openvino
 cd ~
 wget https://download.01.org/opencv/2020/openvinotoolkit/2020.1/l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz
 tar -xf l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz
@@ -22,7 +22,8 @@ sudo usermod -a -G users "$(whoami)"
 cd ~
 $ sh openvino/install_dependencies/install_NCS_udev_rules.sh
 
-# To run program on startup, save the following as a .sh file (i.e. onstart.sh)
+# To run program on startup:
+# save the following as a .sh file (i.e. onstart.sh)
 #!/bin/bash
 cd /home/pi/ambereye/
 source /home/pi/openvino/bin/setupvars.sh

@@ -1,5 +1,6 @@
 # USAGE
-# python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
+# cd ~/ambereye
+# python3 manage.py movidius 
 
 # import the necessary packages
 from imutils.video import VideoStream
@@ -15,7 +16,7 @@ import picamera
 import picamera.array
 
 # custom functions
-from amber.color_detect import get_colors, white_balance
+from amber.color_detect import get_colors
 from amber.models import Car, CarPlacement
 from amber.lp.Main import main
 
@@ -135,17 +136,18 @@ def run():
                     cropped = frame[y:y + int(height), x:x + int(width)]
                     if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                         continue
-
+                    
                     lp = main(cropped)
+                    lp = "000"
                     print("license plate:", lp)
 
-                    color = get_colors(cropped, 3, False)
+                    color = get_colors(cropped, 3)
                     print("color:", color)
                     car, _created = Car.objects.get_or_create(
                         color=color,
                         license_plate=lp,
                         style="sed"
-                    ).first()
+                    )
                     placement = CarPlacement.objects.create(
                         car=car,
                         latitude=0,
@@ -155,7 +157,7 @@ def run():
 
                     cv2.imwrite("amber/templates/img.jpg", cropped)
 #                     cv2.imshow("Frame", cropped)
-                    cv2.waitKey(0)
+#                     cv2.waitKey(0)
 
 #         # apply non-maxima suppression to suppress weak, overlapping
 #         # bounding boxes
