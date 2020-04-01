@@ -20,8 +20,14 @@ from sklearn.model_selection import train_test_split
 nrows = 150
 ncols = 150
 channels = 3
+# all
+#possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
+#                   'Red', 'Purple', 'Green', 'Pink', 'Brown', 'Tan', 'Orange']
+# large
 possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
-                   'Red', 'Purple', 'Green', 'Pink', 'Brown', 'Tan', 'Orange']
+                   'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
+# small
+#possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue', 'Red', 'Green', 'Tan']
 
 # A function to read and process the images to an acceptable format for our model
 def read_and_process_image(list_of_images, labels):
@@ -54,7 +60,7 @@ def read_and_process_image(list_of_images, labels):
 print("start")
 train_imgs = []
 train_labels = []
-with open('labeler/targets_small.csv') as handle:
+with open('labeler/targets_large.csv') as handle:
     reader = csv.DictReader(handle)
 
     for row in reader:
@@ -82,7 +88,7 @@ nval = len(X_val)
 
 
 
-batch_size = 8
+batch_size = 32
 columns = 5
 
 print("Shape of train images is:", X.shape)
