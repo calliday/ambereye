@@ -63,14 +63,14 @@ def run():
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
             break
-        
+
         with picamera.PiCamera() as camera:
             camera.resolution = (2592, 1936)
             # camera.start_preview()
             time.sleep(2)
             with picamera.array.PiRGBArray(camera) as stream:
                 camera.capture(stream, format='bgr')
-                
+
                 # At this point the image is available as stream.array
                 frame = stream.array
 
@@ -103,7 +103,7 @@ def run():
                 scores = detection[5:]
                 classID = np.argmax(scores)
                 confidence = scores[classID]
-                
+
                 # CUSTOM: prevent other objects besides cars from being
                 # processed
                 if LABELS[classID] != 'car':
@@ -135,7 +135,7 @@ def run():
                     cropped = frame[y:y + int(height), x:x + int(width)]
                     if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                         continue
-                    
+
                     lp = main(cropped)
                     print("license plate:", lp)
 
@@ -152,15 +152,16 @@ def run():
                         longitude=0
                     )
                     print("placement:", placement)
-                    
+
                     cv2.imwrite("amber/templates/img.jpg", cropped)
-                    #cv2.waitKey(0)
+#                     cv2.imshow("Frame", cropped)
+                    cv2.waitKey(0)
 
 #         # apply non-maxima suppression to suppress weak, overlapping
 #         # bounding boxes
 #         idxs = cv2.dnn.NMSBoxes(boxes, confidences, args["confidence"],
 #             args["threshold"])
-# 
+#
 #         # ensure at least one detection exists
 #         if len(idxs) > 0:
 #             # loop over the indexes we are keeping
@@ -168,7 +169,7 @@ def run():
 #                 # extract the bounding box coordinates
 #                 (x, y) = (boxes[i][0], boxes[i][1])
 #                 (w, h) = (boxes[i][2], boxes[i][3])
-# 
+#
 #                 # draw a bounding box rectangle and label on the frame
 #                 color = [int(c) for c in COLORS[classIDs[i]]]
 #                 cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)

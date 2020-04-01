@@ -1,5 +1,6 @@
 import cv2
 import csv
+import scipy.io
 import numpy as np
 #import pandas as pd
 
@@ -16,12 +17,30 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 from sklearn.model_selection import train_test_split
 
+boxes = {}
+with open('labeler/boxes.csv') as handle:
+    reader = csv.DictReader(handle)
+    for row in reader:
+        boxes['./labeler/' + row['img'].strip()] = (row['x1'], row['y1'], row['x2'], row['y2'])
+        # boxes[row['img']] = {
+        #     'x1': row['x1'],
+        #     'y1': row['y1'],
+        #     'x2': row['x2'],
+        #     'y2': row['y2']
+        # }
+
 
 nrows = 150
 ncols = 150
 channels = 3
+# all
+#possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
+#                   'Red', 'Purple', 'Green', 'Pink', 'Brown', 'Tan', 'Orange']
+# large
 possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
-                   'Red', 'Purple', 'Green', 'Pink', 'Brown', 'Tan', 'Orange']
+                   'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
+# small
+#possible_colors = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue', 'Red', 'Green', 'Tan']
 
 # A function to read and process the images to an acceptable format for our model
 def read_and_process_image(list_of_images, labels):
@@ -36,16 +55,18 @@ def read_and_process_image(list_of_images, labels):
     #y = labels
 
     for image in list_of_images:
-        #print(image)
         #print(cv2.imread(image, cv2.IMREAD_COLOR))
-        X.append(cv2.resize(cv2.imread(image, cv2.IMREAD_COLOR), (nrows,ncols), interpolation=cv2.INTER_CUBIC))
+        x1, y1, x2, y2 = boxes[image]
+        frame = cv2.imread(image, cv2.IMREAD_COLOR)
+        cropped = frame[int(y1):int(y2), int(x1):int(x2)]
+        X.append(cv2.resize(cropped, (nrows,ncols), interpolation=cv2.INTER_CUBIC))
         # get the labels
 #        for i in range(len(possible_colors)):
 #            if possible_colors[i] in image:
 #                y.append(i)
     for color in labels:
         y.append(possible_colors.index(color))
-        
+
     print("exiting function")
     return X, y
 
@@ -54,11 +75,12 @@ def read_and_process_image(list_of_images, labels):
 print("start")
 train_imgs = []
 train_labels = []
-with open('labeler/targets_small.csv') as handle:
+with open('labeler/targets_large.csv') as handle:
     reader = csv.DictReader(handle)
 
     for row in reader:
         train_imgs.append('./labeler/car_ims/{}'.format(row['img'].strip()))
+        # train_imgs.append(row['img'].strip())
         train_labels.append(row['color'])
 
 print("loaded imgs and labels")
@@ -82,7 +104,7 @@ nval = len(X_val)
 
 
 
-batch_size = 8
+batch_size = 16
 columns = 5
 
 print("Shape of train images is:", X.shape)
@@ -135,13 +157,13 @@ val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
 
 print('generators generated')
 
-#history = model.fit_generator(train_generator,
-#                              steps_per_epoch=ntrain // batch_size,
-#                              epochs=5,
-#                              validation_data=val_generator,
-#                              validation_steps=nval // batch_size)
+history = model.fit(train_generator,
+                    steps_per_epoch=ntrain // batch_size,
+                    epochs=2,
+                    validation_data=val_generator,
+                    validation_steps=nval // batch_size)
 
-history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
+# history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
 test_loss, test_acc = model.evaluate(X_val, y_val)
 
 print('model fitted')
@@ -151,41 +173,43 @@ model.save('model_keras.h5')
 
 print('model saved')
 
-acc = history.history['acc']
-val_acc = history.history['val_acc']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-
-ephocs = range(1, len(acc) + 1)
-
-plt.plot(epochs, acc, 'b', label='Training accuracy')
-plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
-plt.title('Training and Validation accuracy')
-plt.legend()
-
-plt.figure()
-plt.plot(epochs, loss, 'b', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
-plt.title('Training and Validation loss')
-plt.legend()
-
-plt.show()
-
-X_test, y_test = read_and_process_image(test_imgs[0:10])
-x = np.array(X_test)
-test_datagen = ImageDataGenerator(rescale=1./255)
-
-
-i = 0
-text_labels = []
-plt.figure(figsize=(30,20))
-for batch in test_datagen.flow(x, batch_size=1):
-    pred = model.predict(batch)
-    text_labels.append(pred)
-    plt.subplot(5 / columns + 1, columns, i + 1)
-    plt.title('This is a ' + text_labels[i])
-    imgplot = plt.imshow(batch[0])
-    i += 1
-    if i % 10 == 0:
-        break
-plt.show()
+# print(history.history)
+# acc = history.history['accuracy']
+# val_acc = history.history['val_accuracy']
+# loss = history.history['loss']
+# val_loss = history.history['val_loss']
+#
+# epochs = range(1, len(acc) + 1)
+#
+# plt.plot(epochs, acc, 'b', label='Training accuracy')
+# plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+# plt.title('Training and Validation accuracy')
+# plt.legend()
+#
+# plt.figure()
+# plt.plot(epochs, loss, 'b', label='Training loss')
+# plt.plot(epochs, val_loss, 'b', label='Validation loss')
+# plt.title('Training and Validation loss')
+# plt.legend()
+#
+# plt.show()
+#
+# test_imgs = train_imgs
+# X_test, y_test = read_and_process_image(test_imgs[0:10], train_labels[0:10])
+# x = np.array(X_test)
+# test_datagen = ImageDataGenerator(rescale=1./255)
+#
+#
+# i = 0
+# text_labels = []
+# plt.figure(figsize=(30,20))
+# for batch in test_datagen.flow(x, batch_size=1):
+#     pred = model.predict(batch)
+#     text_labels.append(pred)
+#     plt.subplot(5 / columns + 1, columns, i + 1)
+#     plt.title('This is a ' + text_labels[i])
+#     imgplot = plt.imshow(batch[0])
+#     i += 1
+#     if i % 10 == 0:
+#         break
+# plt.show()

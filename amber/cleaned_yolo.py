@@ -11,9 +11,9 @@ import cv2
 
 
 # custom functions
-from color_detect import get_colors
-from models import Car, CarPlacement
-from lp.Main import main
+from amber.color_detect import get_colors
+from amber.models import Car, CarPlacement
+from amber.lp.Main import main
 
 # construct the argument parse and parse the arguments
 def run():
@@ -38,7 +38,7 @@ def run():
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
     (W, H) = (None, None)
-    
+
     # Start camera I/O on another thread
     cam = ThreadedCamera().start()
 
@@ -51,7 +51,7 @@ def run():
         if key == ord("q"):
             cam.stop()
             break
-        
+
         # read the next frame from the stream
         frame = cam.read()
 
@@ -87,7 +87,7 @@ def run():
                 scores = detection[5:]
                 classID = np.argmax(scores)
                 confidence = scores[classID]
-                
+
                 # CUSTOM: prevent other objects besides cars from being
                 # processed
                 if LABELS[classID] != 'car':
@@ -126,7 +126,7 @@ def run():
                         lp = "000"
                     # get the color of the car
                     color = get_colors(cropped, 3)
-                  
+
                     # log to the database
                     car, _created = Car.objects.get_or_create(
                         color=color,
@@ -139,11 +139,5 @@ def run():
                         longitude=0
                     )
                     print("placement:", placement)
-                  
-                    cv2.imshow("Frame", cropped)
-                    cv2.waitKey(0);
-
-run()
-    
-    
-    
+#                     cv2.imshow("Frame", cropped)
+#                     cv2.waitKey(0);
