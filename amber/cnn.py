@@ -51,7 +51,7 @@ def read_and_process_image(list_of_images, labels):
 #                y.append(i)
     for color in labels:
         y.append(possible_colors.index(color))
-        
+
     print("exiting function")
     return X, y
 
@@ -88,7 +88,7 @@ nval = len(X_val)
 
 
 
-batch_size = 32
+batch_size = 16
 columns = 5
 
 print("Shape of train images is:", X.shape)
@@ -141,13 +141,13 @@ val_generator = val_datagen.flow(X_val, y_val, batch_size=batch_size)
 
 print('generators generated')
 
-#history = model.fit_generator(train_generator,
-#                              steps_per_epoch=ntrain // batch_size,
-#                              epochs=5,
-#                              validation_data=val_generator,
-#                              validation_steps=nval // batch_size)
+history = model.fit(train_generator,
+                    steps_per_epoch=ntrain // batch_size,
+                    epochs=30,
+                    validation_data=val_generator,
+                    validation_steps=nval // batch_size)
 
-history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
+# history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
 test_loss, test_acc = model.evaluate(X_val, y_val)
 
 print('model fitted')
@@ -157,41 +157,43 @@ model.save('model_keras.h5')
 
 print('model saved')
 
-acc = history.history['acc']
-val_acc = history.history['val_acc']
-loss = history.history['loss']
-val_loss = history.history['val_loss']
-
-ephocs = range(1, len(acc) + 1)
-
-plt.plot(epochs, acc, 'b', label='Training accuracy')
-plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
-plt.title('Training and Validation accuracy')
-plt.legend()
-
-plt.figure()
-plt.plot(epochs, loss, 'b', label='Training loss')
-plt.plot(epochs, val_loss, 'b', label='Validation loss')
-plt.title('Training and Validation loss')
-plt.legend()
-
-plt.show()
-
-X_test, y_test = read_and_process_image(test_imgs[0:10])
-x = np.array(X_test)
-test_datagen = ImageDataGenerator(rescale=1./255)
-
-
-i = 0
-text_labels = []
-plt.figure(figsize=(30,20))
-for batch in test_datagen.flow(x, batch_size=1):
-    pred = model.predict(batch)
-    text_labels.append(pred)
-    plt.subplot(5 / columns + 1, columns, i + 1)
-    plt.title('This is a ' + text_labels[i])
-    imgplot = plt.imshow(batch[0])
-    i += 1
-    if i % 10 == 0:
-        break
-plt.show()
+# print(history.history)
+# acc = history.history['accuracy']
+# val_acc = history.history['val_accuracy']
+# loss = history.history['loss']
+# val_loss = history.history['val_loss']
+#
+# epochs = range(1, len(acc) + 1)
+#
+# plt.plot(epochs, acc, 'b', label='Training accuracy')
+# plt.plot(epochs, val_acc, 'b', label='Validation accuracy')
+# plt.title('Training and Validation accuracy')
+# plt.legend()
+#
+# plt.figure()
+# plt.plot(epochs, loss, 'b', label='Training loss')
+# plt.plot(epochs, val_loss, 'b', label='Validation loss')
+# plt.title('Training and Validation loss')
+# plt.legend()
+#
+# plt.show()
+#
+# test_imgs = train_imgs
+# X_test, y_test = read_and_process_image(test_imgs[0:10], train_labels[0:10])
+# x = np.array(X_test)
+# test_datagen = ImageDataGenerator(rescale=1./255)
+#
+#
+# i = 0
+# text_labels = []
+# plt.figure(figsize=(30,20))
+# for batch in test_datagen.flow(x, batch_size=1):
+#     pred = model.predict(batch)
+#     text_labels.append(pred)
+#     plt.subplot(5 / columns + 1, columns, i + 1)
+#     plt.title('This is a ' + text_labels[i])
+#     imgplot = plt.imshow(batch[0])
+#     i += 1
+#     if i % 10 == 0:
+#         break
+# plt.show()
