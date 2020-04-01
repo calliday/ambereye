@@ -1,5 +1,6 @@
 import cv2
 import csv
+import scipy.io
 import numpy as np
 #import pandas as pd
 
@@ -15,6 +16,18 @@ from tensorflow.keras.datasets import mnist
 from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 from sklearn.model_selection import train_test_split
+
+boxes = {}
+with open('labeler/boxes.csv') as handle:
+    reader = csv.DictReader(handle)
+    for row in reader:
+        boxes['./labeler/' + row['img'].strip()] = (row['x1'], row['y1'], row['x2'], row['y2'])
+        # boxes[row['img']] = {
+        #     'x1': row['x1'],
+        #     'y1': row['y1'],
+        #     'x2': row['x2'],
+        #     'y2': row['y2']
+        # }
 
 
 nrows = 150
@@ -42,9 +55,11 @@ def read_and_process_image(list_of_images, labels):
     #y = labels
 
     for image in list_of_images:
-        #print(image)
         #print(cv2.imread(image, cv2.IMREAD_COLOR))
-        X.append(cv2.resize(cv2.imread(image, cv2.IMREAD_COLOR), (nrows,ncols), interpolation=cv2.INTER_CUBIC))
+        x1, y1, x2, y2 = boxes[image]
+        frame = cv2.imread(image, cv2.IMREAD_COLOR)
+        cropped = frame[int(y1):int(y2), int(x1):int(x2)]
+        X.append(cv2.resize(cropped, (nrows,ncols), interpolation=cv2.INTER_CUBIC))
         # get the labels
 #        for i in range(len(possible_colors)):
 #            if possible_colors[i] in image:
@@ -65,6 +80,7 @@ with open('labeler/targets_large.csv') as handle:
 
     for row in reader:
         train_imgs.append('./labeler/car_ims/{}'.format(row['img'].strip()))
+        # train_imgs.append(row['img'].strip())
         train_labels.append(row['color'])
 
 print("loaded imgs and labels")
@@ -143,7 +159,7 @@ print('generators generated')
 
 history = model.fit(train_generator,
                     steps_per_epoch=ntrain // batch_size,
-                    epochs=30,
+                    epochs=2,
                     validation_data=val_generator,
                     validation_steps=nval // batch_size)
 
