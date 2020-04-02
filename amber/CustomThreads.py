@@ -3,6 +3,8 @@ import picamera
 import picamera.array
 from threading import Thread
 
+import cv2
+
 """ A class to run camera I/O on a different thread """
 class ThreadedCamera:
     """ Set up class data """
@@ -32,14 +34,17 @@ class ThreadedCamera:
         
     """ Set the class's frame to the stream array """
     def update(self):
-        
         while(True):
-            
+#             print("[DEBUG] Updating camera frame")
             # Loop exit case
-            if self.stopped:
+            if self.stopped: 
+                print("[DEBUG] Stopped thread")
                 return
                     
             # At this point the image is available as stream.array
+            time.sleep(1)
+            self.stream = picamera.array.PiRGBArray(self.camera)
+            self.camera.capture(self.stream, format='bgr')
             self.frame = self.stream.array
     
     """ Get the class's frame (from the stream) """

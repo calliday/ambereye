@@ -10,15 +10,22 @@ import argparse
 import imutils
 import time
 import cv2
+import csv
 import os
 import time
 import picamera
 import picamera.array
+from tensorflow.keras.models import load_model
 
 # custom functions
 from amber.color_detect import get_colors
 from amber.models import Car, CarPlacement
 from amber.lp.Main import main
+from amber.CustomThreads import ThreadedCamera
+
+COLOR_MODEL = load_model('amber/model_keras54.h5')
+COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
+                   'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
 
 # construct the argument parse and parse the arguments
 def run():
@@ -55,6 +62,9 @@ def run():
 
     writer = None
     (W, H) = (None, None)
+    
+    # Start camera I/O on another thread
+    cam = ThreadedCamera().start()
 
     # loop over frames from the video file stream
     while True:
@@ -63,17 +73,11 @@ def run():
         # if the 'q' key is pressed, stop the loop
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
+            cam.stop()
             break
-
-        with picamera.PiCamera() as camera:
-            camera.resolution = (2592, 1936)
-            # camera.start_preview()
-            time.sleep(2)
-            with picamera.array.PiRGBArray(camera) as stream:
-                camera.capture(stream, format='bgr')
-
-                # At this point the image is available as stream.array
-                frame = stream.array
+        
+        # read the next frame from the stream
+        frame = cam.read()
 
         # if the frame dimensions are empty, grab them
         if W is None or H is None:
@@ -137,12 +141,15 @@ def run():
                     if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                         continue
                     
-                    lp = main(cropped)
-                    lp = "000"
-                    print("license plate:", lp)
+                    
+                    lp, found = main(cropped)
+                    if not lp:
+                        lp = "000"
 
-                    color = get_colors(cropped, 3)
-                    print("color:", color)
+                    # get the color of the car
+                    # color = get_colors(cropped, 3)
+                    color = get_color(cropped)
+                    
                     car, _created = Car.objects.get_or_create(
                         color=color,
                         license_plate=lp,
@@ -155,7 +162,16 @@ def run():
                     )
                     print("placement:", placement)
 
-                    cv2.imwrite("amber/templates/img.jpg", cropped)
+                    cv2.imwrite("amber/static/img.jpg", cropped)
+                    
+                    with open("amber/static/details.txt", 'w+') as details:
+                        writer = csv.writer(details)
+                        lines = [[]]
+                        lines[0].append(color)
+                        lines[0].append(found)
+                        lines[0].append(lp)
+                        writer.writerows(lines)
+
 #                     cv2.imshow("Frame", cropped)
 #                     cv2.waitKey(0)
 
@@ -184,3 +200,13 @@ def run():
     print("[INFO] cleaning up...")
 #     vs.stop()
     # vs.release()
+ 
+ 
+def get_color(image):
+    cars = np.array([cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)])
+    prediction = COLOR_MODEL.predict(cars)
+    index = np.where(prediction[0] == 1)
+    try:
+        return COLORS[index[0][0]]
+    except:
+        return "Unknown"

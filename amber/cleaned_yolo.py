@@ -37,6 +37,9 @@ def run():
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
     # Set the NCS2 as the preferred CPU for the model
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+    
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
@@ -57,6 +60,9 @@ def run():
 
         # read the next frame from the stream
         frame = cam.read()
+        
+#         cv2.imshow("RAW", frame)
+#         cv2.waitKey(0)
 
         frame = imutils.rotate(frame, angle=180)
 
