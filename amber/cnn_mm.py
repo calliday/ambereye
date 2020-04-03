@@ -22,7 +22,6 @@ mat = scipy.io.loadmat('./labeler/cars_annos.mat')
 classes = [x[0] for x in mat['class_names'][0]]
 boxes = {}
 # classes = [x for x in open('./labeler/classes.txt').split('\n')]
-print(classes)
 # with open('labeler/boxes.csv') as handle:
 #     reader = csv.DictReader(handle)
 #     for row in reader:

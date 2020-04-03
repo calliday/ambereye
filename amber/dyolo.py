@@ -1,6 +1,6 @@
 # USAGE
 # cd ~/ambereye
-# python3 manage.py movidius 
+# python3 manage.py movidius
 
 # import the necessary packages
 from imutils.video import VideoStream
@@ -23,7 +23,7 @@ from amber.models import Car, CarPlacement
 from amber.lp.Main import main
 from amber.CustomThreads import ThreadedCamera
 
-COLOR_MODEL = load_model('amber/model_keras54.h5')
+COLOR_MODEL = load_model('amber/model_keras61.h5')
 COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
                    'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
 
@@ -48,7 +48,7 @@ def run():
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
-    
+
     # Custom
     # Is this really all we have to do to set the target CPU to Movidius?
     net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
@@ -62,7 +62,7 @@ def run():
 
     writer = None
     (W, H) = (None, None)
-    
+
     # Start camera I/O on another thread
     cam = ThreadedCamera().start()
 
@@ -75,7 +75,7 @@ def run():
         if key == ord("q"):
             cam.stop()
             break
-        
+
         # read the next frame from the stream
         frame = cam.read()
 
@@ -140,8 +140,8 @@ def run():
                     cropped = frame[y:y + int(height), x:x + int(width)]
                     if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                         continue
-                    
-                    
+
+
                     lp, found = main(cropped)
                     if not lp:
                         lp = "000"
@@ -149,7 +149,7 @@ def run():
                     # get the color of the car
                     # color = get_colors(cropped, 3)
                     color = get_color(cropped)
-                    
+
                     car, _created = Car.objects.get_or_create(
                         color=color,
                         license_plate=lp,
@@ -163,7 +163,7 @@ def run():
                     print("placement:", placement)
 
                     cv2.imwrite("amber/static/img.jpg", cropped)
-                    
+
                     with open("amber/static/details.txt", 'w+') as details:
                         writer = csv.writer(details)
                         lines = [[]]
@@ -200,8 +200,8 @@ def run():
     print("[INFO] cleaning up...")
 #     vs.stop()
     # vs.release()
- 
- 
+
+
 def get_color(image):
     cars = np.array([cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)])
     prediction = COLOR_MODEL.predict(cars)
