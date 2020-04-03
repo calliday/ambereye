@@ -104,27 +104,50 @@ nval = len(X_val)
 
 
 
-batch_size = 16
+batch_size = 8
 columns = 5
 
 print("Shape of train images is:", X.shape)
 print("Shape of labels is:", y.shape)
 
-window = (3, 3)
-pool = (2, 2)
+window = (15, 15)
+pool = (5, 5)
+
+# (8) (15,15),(5,5) (-,-,-,16) (0.5) (128) (30 epoch) (61.33%)
+# (8) (15,15),(5,5) (-,-,-,16) (0.5) (128) (5 epoch) (58.33%)
+# (8) (15,15),(5,5) (-,-,-,16) (0.5) (256) (5 epoch) (57.22%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.5) (128) (5 epoch) (55.67, 50.89, 40.78%)
+# (8) (10,10),(5,5) (-,-,-,16) (0.5) (64) (5 epoch) (54.56%)
+# (16) (7,7),(5,5) (-,-,-,8) (0.5) (512) (5 epoch) (53.44%)
+# (8) (10,10),(5,5) (-,-,-,16) (0.5) (128) (5 epoch) (51.78%)
+# (8) (7,7),(5,5) (-,-,-,16) (0.25) (512) (5 epoch) (51.22%)
+# (8) (8,8),(5,5) (-,-,-,16) (0.5) (256) (5 epoch) (49.67%)
+# (4) (10,10),(5,5) (-,-,-,16) (0.5) (256) (5 epoch) (48.67%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.5) (128) (30 epoch) (46.67%)
+# (32) (5,5),(2,2) (2,4,6,8) (0.25) (128) (5 epoch) (45.11%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.25) (128) (5 epoch) (45.00, 44.33%)
+# (32) (5,5),(2,2) (2,4,6,8) (0.5) (128) (5 epoch) (43.11%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.5) (64) (5 epoch) (43.00%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.5) (256) (5 epoch) (40.22%)
+# (16) (5,5),(2,2) (4,6,8,16) (0.5) (128) (5 epoch) (39.44%)
+# (16) (5,5),(4,4) (2,-,-,-) (0.5) (128) (5 epoch) (38.44%)
+# (8) (5,5),(2,2) (2,4,6,8) (0.5) (128) (5 epoch) (35.89%)
+# (16) (5,5),(2,2) (2,4,6,8) (0.75) (128) (5 epoch) (32.33%)
 
 model = models.Sequential()
 model.add(layers.Conv2D(batch_size, window, activation='relu', input_shape=(nrows,ncols,channels)))
 model.add(layers.MaxPooling2D(pool))
-model.add(layers.Conv2D(batch_size*2, window, activation='relu'))
-model.add(layers.MaxPooling2D(pool))
-model.add(layers.Conv2D(batch_size*4, window, activation='relu'))
-model.add(layers.MaxPooling2D(pool))
-model.add(layers.Conv2D(batch_size*4, window, activation='relu'))
+# model.add(layers.Conv2D(batch_size*2, window, activation='relu'))
+# model.add(layers.MaxPooling2D(pool))
+# model.add(layers.Conv2D(batch_size*4, window, activation='relu'))
+# model.add(layers.MaxPooling2D(pool))
+# model.add(layers.Conv2D(batch_size*8, window, activation='relu'))
+# model.add(layers.MaxPooling2D(pool))
+model.add(layers.Conv2D(batch_size*16, window, activation='relu'))
 model.add(layers.MaxPooling2D(pool))
 model.add(layers.Flatten())
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(512, activation='relu'))
+model.add(layers.Dense(64, activation='relu'))
 model.add(layers.Dense(len(possible_colors), activation='softmax'))
 
 model.summary()
@@ -159,7 +182,7 @@ print('generators generated')
 
 history = model.fit(train_generator,
                     steps_per_epoch=ntrain // batch_size,
-                    epochs=64,
+                    epochs=30,
                     validation_data=val_generator,
                     validation_steps=nval // batch_size)
 
