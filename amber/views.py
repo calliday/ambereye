@@ -40,4 +40,5 @@ def index(_request):
     return JsonResponse({'data': "this is working"})
 
 def preview(request):
+    print("new request to preview")
     return render(request, 'preview.html')
