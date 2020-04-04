@@ -25,7 +25,7 @@ from amber.lp.Main import main
 from amber.CustomThreads import ThreadedCamera
 
 COLOR_MODEL = load_model('amber/model_keras61.h5')
-TYPE_MODEL = load_model('amber/model_keras_types44.h5')
+TYPE_MODEL = load_model('amber/model_keras_types51.h5')
 COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
                    'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
 CAR_TYPES = {
