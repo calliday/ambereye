@@ -1,5 +1,7 @@
-# USAGE
-# python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
+# YOLO THAT RUNS WITHOUT DJANGO
+# These lines are not needed once integrated with django
+import os
+os.chdir("/home/pi/ambereye/amber")
 
 # import the necessary packages
 from amber.CustomThreads import ThreadedCamera
@@ -23,17 +25,21 @@ def run():
     args = {"confidence": 0.5, "threshold": 0.3}
 
     # load the COCO class labels our YOLO model was trained on
-    labelsPath = "amber/yolo/yolo-coco/coco.names"
+    labelsPath = "yolo/yolo-coco/coco.names"
     LABELS = open(labelsPath).read().strip().split("\n")
 
     # derive the paths to the YOLO weights and model configuration
-    weightsPath = "amber/yolo/yolo-coco/yolov3.weights"
-    configPath = "amber/yolo/yolo-coco/yolov3.cfg"
+    weightsPath = "yolo/yolo-coco/yolov3.weights"
+    configPath = "yolo/yolo-coco/yolov3.cfg"
 
     # load our YOLO object detector trained on COCO dataset (80 classes)
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+    # Set the NCS2 as the preferred CPU for the model
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+    
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
 
@@ -54,6 +60,9 @@ def run():
 
         # read the next frame from the stream
         frame = cam.read()
+        
+#         cv2.imshow("RAW", frame)
+#         cv2.waitKey(0)
 
         frame = imutils.rotate(frame, angle=180)
 
@@ -71,7 +80,7 @@ def run():
         blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416),
             swapRB=True, crop=False)
         net.setInput(blob)
-        layerOutputs = net.forward(ln)  # this is the bottleneck
+        layerOutputs = net.forward(ln)  # this was the bottleneck, now it is offloaded to the NCS
 
         # initialize our lists of detected confidences,
         # and class IDs, respectively
@@ -120,11 +129,10 @@ def run():
                         continue
 
                     # try to find and read license plate
-#                     lp = threading.Thread(target=main(cropped), args=(1,))
+                    lp = threading.Thread(target=main(cropped), args=(1,))
                     lp = main(cropped)
                     if lp is None:
                         lp = "000"
-
                     # get the color of the car
                     # color = get_colors(cropped, 3)
                     color = get_color(cropped)
@@ -142,7 +150,6 @@ def run():
                         longitude=0
                     )
                     print("placement:", placement)
-
 #                     cv2.imshow("Frame", cropped)
 #                     cv2.waitKey(0);
 

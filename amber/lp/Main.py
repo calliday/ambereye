@@ -24,7 +24,7 @@ def main(car):
 
     if blnKNNTrainingSuccessful == False:                               # if KNN training was not successful
         print("\nerror: KNN traning was not successful\n")  # show error message
-        return                                                          # and exit program
+        return None, False                                                # and exit program
     # end if
 
 #     imgOriginalScene  = cv2.imread("2.png")               # open image
@@ -33,7 +33,7 @@ def main(car):
     if imgOriginalScene is None:                            # if image was not read successfully
         print("\nerror: image not read from file \n\n")  # print error message to std out
         os.system("pause")                                  # pause so user can see error message
-        return                                              # and exit program
+        return None, False                                       # and exit program
     # end if
 
     listOfPossiblePlates = DetectPlates.detectPlatesInScene(imgOriginalScene)           # detect plates
@@ -43,7 +43,8 @@ def main(car):
 #     cv2.imshow("imgOriginalScene", imgOriginalScene)            # show scene image
 
     if len(listOfPossiblePlates) == 0:                          # if no plates were found
-        print("\nno license plates were detected\n")  # inform user no plates were found
+        pass
+        #print("\nno license plates were detected\n")  # inform user no plates were found
     else:                                                       # else
                 # if we get in here list of possible plates has at leat one plate
 
@@ -57,14 +58,14 @@ def main(car):
 #         cv2.imshow("imgThresh", licPlate.imgThresh)
 
         if len(licPlate.strChars) == 0:                     # if no chars were found in the plate
-            print("\nno characters were detected\n\n")  # show message
-            return                                          # and exit program
+            #print("\nno characters were detected\n\n")  # show message
+            return None, True                                    # and exit program
         # end if
 
         drawRedRectangleAroundPlate(imgOriginalScene, licPlate)             # draw red rectangle around plate
 
-        print("\nlicense plate read from image = " + licPlate.strChars + "\n")  # write license plate text to std out
-        print("----------------------------------------")
+        #print("\nlicense plate read from image = " + licPlate.strChars + "\n")  # write license plate text to std out
+        #print("----------------------------------------")
 
         writeLicensePlateCharsOnImage(imgOriginalScene, licPlate)           # write license plate text on the image
 
@@ -72,13 +73,13 @@ def main(car):
 # 
 #         cv2.imwrite("imgOriginalScene.png", imgOriginalScene)           # write image out to file
         
-        return licPlate.strChars
+        return licPlate.strChars, True
 
     # end if else
 
-    cv2.waitKey(0)                  # hold windows open until user presses a key
+#     cv2.waitKey(0)                  # hold windows open until user presses a key
 
-    return
+    return None, False
 # end main
 
 ###################################################################################################

@@ -1,0 +1,39 @@
+# Insert opencv install steps here
+
+# These is needed for the general program to work
+pip3 install Django
+pip3 install imutils
+pip3 install -U scikit-learn
+pip3 install matplotlib
+sudo apt-get install python3-matplotlib
+pip3 install scikit-image
+
+# These are the install steps for openvino
+cd ~
+wget https://download.01.org/opencv/2020/openvinotoolkit/2020.1/l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz
+tar -xf l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz
+mv l_openvino_toolkit_runtime_raspbian_p_2020.1.023.tgz openvino
+sudo nano ~/.bashrc
+# append this line: source ~/openvino/bin/setupvars.sh
+# exit
+# set custom USB rules
+sudo usermod -a -G users "$(whoami)"
+# log out and log back in
+cd ~
+$ sh openvino/install_dependencies/install_NCS_udev_rules.sh
+
+# To run program on startup:
+# save the following as a .sh file (i.e. onstart.sh)
+#!/bin/bash
+cd /home/pi/ambereye/
+source /home/pi/openvino/bin/setupvars.sh
+python3 manage.py runserver &
+python3 manage.py start &
+exit 0
+
+	# and append these lines before the 'exit 0' line at the end of rc.local
+	sudo -u pi <pathtofile>/onstart.sh &
+
+
+
+

@@ -1,5 +1,6 @@
 # USAGE
-# python yolo_video.py --input videos/airport.mp4 --output output/airport_output.avi --yolo yolo-coco
+# cd ~/ambereye
+# python3 manage.py movidius
 
 # import the necessary packages
 from imutils.video import VideoStream
@@ -9,15 +10,24 @@ import argparse
 import imutils
 import time
 import cv2
+import csv
 import os
 import time
 import picamera
 import picamera.array
+from tensorflow.keras.models import load_model
 
 # custom functions
-from amber.color_detect import get_colors, white_balance
+from amber.color_detect import get_colors
+from amber.labeler.car_types_classes import possible_types
 from amber.models import Car, CarPlacement
 from amber.lp.Main import main
+from amber.CustomThreads import ThreadedCamera
+
+COLOR_MODEL = load_model('amber/model_keras61.h5')
+TYPE_MODEL = load_model('amber/model_keras_types44.h5')
+COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
+                   'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
 
 # construct the argument parse and parse the arguments
 def run():
@@ -40,21 +50,23 @@ def run():
     # and determine only the *output* layer names that we need from YOLO
     print("[INFO] loading YOLO from disk...")
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+
+    # Custom
+    # Is this really all we have to do to set the target CPU to Movidius?
+    net.setPreferableTarget(cv2.dnn.DNN_TARGET_MYRIAD)
+    net.setPreferableBackend(cv2.dnn.DNN_BACKEND_INFERENCE_ENGINE)
+
     ln = net.getLayerNames()
     ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-
-    # initialize the video stream, pointer to output video file, and
-    # frame dimensions
-    # old: vs = cv2.VideoCapture(args["input"])
-    # vs = VideoStream(src=0, resolution=(1920,1080)).start()
-#     vs = VideoStream(src=0).start()
-#     vs.rotation = 180
 
     # allow camera to warm up
     time.sleep(2.0)
 
     writer = None
     (W, H) = (None, None)
+
+    # Start camera I/O on another thread
+    cam = ThreadedCamera().start()
 
     # loop over frames from the video file stream
     while True:
@@ -63,25 +75,11 @@ def run():
         # if the 'q' key is pressed, stop the loop
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
+            cam.stop()
             break
 
-        with picamera.PiCamera() as camera:
-            camera.resolution = (2592, 1936)
-            camera.start_preview()
-            time.sleep(2)
-            with picamera.array.PiRGBArray(camera) as stream:
-                camera.capture(stream, format='bgr')
-
-                # At this point the image is available as stream.array
-                frame = stream.array
-
-#         # read the next frame from the stream
-#         frame = vs.read()
-#         frame = imutils.rotate(frame, angle=180)
-#         #frame = white_balance(frame)
-
-#         cv2.imshow("frame", frame)
-#         cv2.waitKey(0);
+        # read the next frame from the stream
+        frame = cam.read()
 
         # if the frame dimensions are empty, grab them
         if W is None or H is None:
@@ -145,16 +143,20 @@ def run():
                     if cropped.shape[0] < 1 or cropped.shape[1] < 1:
                         continue
 
-                    lp = main(cropped)
-#                     lp = "000"
-                    print("license plate:", lp)
 
-                    color = get_colors(cropped, 3, False)
-                    print("color:", color)
+                    lp, found = main(cropped)
+                    if not lp:
+                        lp = "000"
+
+                    # get the color of the car
+                    # color = get_colors(cropped, 3)
+                    color = get_color(cropped)
+                    car_type = get_car_type(cropped)
+
                     car, _created = Car.objects.get_or_create(
                         color=color,
                         license_plate=lp,
-                        style="sed"
+                        style=car_type
                     )
                     placement = CarPlacement.objects.create(
                         car=car,
@@ -162,11 +164,19 @@ def run():
                         longitude=0
                     )
                     print("placement:", placement)
-#                     filename = "images/{}_{}.jpg".format(color, placement)
-#                     cv2.imwrite(filename, cropped)
 
-                    cv2.imshow("Frame", cropped)
-                    cv2.waitKey(0);
+                    cv2.imwrite("amber/static/img.jpg", cropped)
+
+                    with open("amber/static/details.txt", 'w+') as details:
+                        writer = csv.writer(details)
+                        lines = [[]]
+                        lines[0].append(color)
+                        lines[0].append(found)
+                        lines[0].append(lp)
+                        writer.writerows(lines)
+
+#                     cv2.imshow("Frame", cropped)
+#                     cv2.waitKey(0)
 
 #         # apply non-maxima suppression to suppress weak, overlapping
 #         # bounding boxes
@@ -193,3 +203,22 @@ def run():
     print("[INFO] cleaning up...")
 #     vs.stop()
     # vs.release()
+
+
+def get_color(image):
+    cars = np.array([cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)])
+    prediction = COLOR_MODEL.predict(cars)
+    index = np.where(prediction[0] == 1)
+    try:
+        return COLORS[index[0][0]]
+    except:
+        return "Color Unknown"
+
+def get_car_type(image):
+    cars = np.array([cv2.resize(image, (150, 150), interpolation=cv2.INTER_CUBIC)])
+    prediction = TYPE_MODEL.predict(cars)
+    index = np.where(prediction[0] == 1)
+    try:
+        return possible_types[index[0][0]]
+    except:
+        return "Type Unknown"

@@ -110,7 +110,7 @@ columns = 5
 print("Shape of train images is:", X.shape)
 print("Shape of labels is:", y.shape)
 
-window = (15, 15)
+window = (5, 5)
 pool = (5, 5)
 
 # (8) (15,15),(5,5) (-,-,-,16) (0.5) (128) (30 epoch) (61.33%)
@@ -182,17 +182,17 @@ print('generators generated')
 
 history = model.fit(train_generator,
                     steps_per_epoch=ntrain // batch_size,
-                    epochs=30,
+                    epochs=1,
                     validation_data=val_generator,
                     validation_steps=nval // batch_size)
 
 # history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
 test_loss, test_acc = model.evaluate(X_val, y_val)
 
-print('model fitted')
+print('model fitted - {:.0f}% accurate'.format(test_acc*100))
 
-model.save_weights('model_weights.h5')
-model.save('model_keras.h5')
+# model.save_weights('model_weights.h5')
+model.save('model_keras{:.0f}.h5'.format(test_acc*100))
 
 print('model saved')
 

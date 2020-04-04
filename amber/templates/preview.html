@@ -2,12 +2,45 @@
 {% load static %}
 <html lang="en">
   <head>
-    <!-- <link rel="stylesheet" href="{% static 'dist/nextlevel.css' %}" /> -->
+    <meta http-equiv="Refresh" content="5">
   </head>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100&display=swap" rel="stylesheet">
+  <style>
+    img{
+      width: 70%;
+    }
+    *{
+      font-family: 'Roboto', sans-serif;
+      text-align: center;
+    }
+  </style>
   <body>
     <div id="app"></div>
-    <h1>This is a preview</h1>
-    <img src="{% static '/000001.jpg' %}">
-     <!-- <script src="{% static 'dist/nextlevel.js' %}"></script> -->
+    <h1>Preview</h1>
+    <img src="{% static '/img.jpg' %}">
+    <h3 id="display"></h3>
+    <script>
+      function readTextFile(file)
+      {
+          var rawFile = new XMLHttpRequest();
+          rawFile.open("GET", file, false);
+          rawFile.onreadystatechange = function ()
+          {
+              if(rawFile.readyState === 4)
+              {
+                  if(rawFile.status === 200 || rawFile.status == 0)
+                  {
+                      var allText = rawFile.responseText;
+                      var fileDisplayArea = document.getElementById('display');
+                      fileDisplayArea.innerText = allText;
+                  }
+              }
+          }
+          rawFile.send(null);
+      }
+      
+      readTextFile("{% static '/details.txt' %}")
+      
+    </script>
   </body>
 </html>

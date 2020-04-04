@@ -22,7 +22,6 @@ mat = scipy.io.loadmat('./labeler/cars_annos.mat')
 classes = [x[0] for x in mat['class_names'][0]]
 boxes = {}
 # classes = [x for x in open('./labeler/classes.txt').split('\n')]
-print(classes)
 # with open('labeler/boxes.csv') as handle:
 #     reader = csv.DictReader(handle)
 #     for row in reader:
@@ -106,7 +105,7 @@ nval = len(X_val)
 
 
 
-batch_size = 64
+batch_size = 32
 columns = 5
 
 print("Shape of train images is:", X.shape)
@@ -155,13 +154,13 @@ print('compiled model')
 
 # Create the augmentation configuration
 # Helps prevent overfitting
-train_datagen = ImageDataGenerator(rescale=1./255,
-                                  rotation_range=40,
-                                  width_shift_range=0.2,
-                                  height_shift_range=0.2,
-                                  shear_range=0.2,
-                                  zoom_range=0.2,
-                                  horizontal_flip=True,)
+train_datagen = ImageDataGenerator(rescale=1./255)#,
+                                  # rotation_range=40,
+                                  # width_shift_range=0.2,
+                                  # height_shift_range=0.2,
+                                  # shear_range=0.2,
+                                  # zoom_range=0.2,
+                                  # horizontal_flip=True,)
 
 val_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -182,10 +181,10 @@ history = model.fit(train_generator,
 # history = model.fit(X_train, y_train, batch_size=batch_size, epochs=5, verbose=1)
 test_loss, test_acc = model.evaluate(X_val, y_val)
 
-print('model fitted')
+print('model fitted - {:.0f}% accurate'.format(test_acc*100))
 
-model.save_weights('model_weights_mm.h5')
-model.save('model_keras_mm.h5')
+# model.save_weights('model_weights_mm.h5')
+model.save('model_keras_mm{:.0f}.h5'.format(test_acc*100))
 
 print('model saved')
 
