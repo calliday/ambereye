@@ -17,14 +17,14 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
 from sklearn.model_selection import train_test_split
 
-from labeler.car_types_classes import car_types, possible_types
+from labeler.car_types_classes_fewer import car_types, possible_types
 
 
 classes = possible_types
 boxes = {}
 
-nrows = 150
-ncols = 150
+nrows = ncols = 150
+
 channels = 3
 
 # A function to read and process the images to an acceptable format for our model
@@ -39,10 +39,12 @@ def read_and_process_image(list_of_images, labels):
     y = []  # labels
     #y = labels
 
+    skip = 3
+
     i = -1
     for image in list_of_images:
         i += 1
-        if i % 4 != 0:
+        if i % skip != 0:
             continue
         #print(cv2.imread(image, cv2.IMREAD_COLOR))
         # print(image)
@@ -57,7 +59,7 @@ def read_and_process_image(list_of_images, labels):
     i = -1
     for label in labels:
         i += 1
-        if i % 4 != 0:
+        if i % skip != 0:
             continue
         y.append(classes.index(label))
 
@@ -104,23 +106,23 @@ columns = 5
 print("Shape of train images is:", X.shape)
 print("Shape of labels is:", y.shape)
 
-window = (15, 15)
-pool = (5, 5)
+window = (10, 10)
+pool = (3, 3)
 
 model = models.Sequential()
 model.add(layers.Conv2D(batch_size, window, activation='relu', input_shape=(nrows,ncols,channels)))
 model.add(layers.MaxPooling2D(pool))
 # model.add(layers.Conv2D(batch_size*2, window, activation='relu'))
 # model.add(layers.MaxPooling2D(pool))
-# model.add(layers.Conv2D(batch_size*4, window, activation='relu'))
-# model.add(layers.MaxPooling2D(pool))
-# model.add(layers.Conv2D(batch_size*8, window, activation='relu'))
-# model.add(layers.MaxPooling2D(pool))
-model.add(layers.Conv2D(batch_size*16, window, activation='relu'))
+model.add(layers.Conv2D(batch_size*4, window, activation='relu'))
 model.add(layers.MaxPooling2D(pool))
+model.add(layers.Conv2D(batch_size*8, window, activation='relu'))
+model.add(layers.MaxPooling2D(pool))
+# model.add(layers.Conv2D(batch_size*16, window, activation='relu'))
+# model.add(layers.MaxPooling2D(pool))
 model.add(layers.Flatten())
 model.add(layers.Dropout(0.5))
-model.add(layers.Dense(128, activation='relu'))
+model.add(layers.Dense(512, activation='relu'))
 model.add(layers.Dense(len(possible_types), activation='softmax'))
 
 # len(mat['class_names'][0])

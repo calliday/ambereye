@@ -60,8 +60,10 @@ class Car(BaseModel):
     ('suv', 'SUV'),
     ('sed', 'Sedan'),
     ('coup', 'Coupe'),
+    ('conv', 'Convertible')
     ('semi', 'Semi'),
-    ('pick', 'Pickup'),
+    ('truck', 'Truck'),
+    ('van', 'Van'),
     ('moto', 'Motorcycle'),
     ('bus', 'Bus'),
     )
@@ -80,11 +82,11 @@ class CarPlacement(BaseModel):
     car = models.ForeignKey('Car', on_delete=models.CASCADE)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
-    
-    
+
+
     def __str__(self):
         return "{} on {} at {}".format(
-            self.car, 
-            self.created_at.strftime("%b %d, %y"), 
+            self.car,
+            self.created_at.strftime("%b %d, %y"),
             self.created_at.strftime("%I:%M %p")
         )

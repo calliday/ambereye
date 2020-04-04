@@ -28,6 +28,17 @@ COLOR_MODEL = load_model('amber/model_keras61.h5')
 TYPE_MODEL = load_model('amber/model_keras_types44.h5')
 COLORS = ['Black', 'Silver', 'Gray', 'White', 'Yellow', 'Blue',
                    'Red', 'Purple', 'Green', 'Brown', 'Tan', 'Orange']
+CAR_TYPES = {
+    'SUV': 'suv',
+    'Sedan': 'sed',
+    'Coupe': 'coup',
+    'Convertible': 'conv',
+    'Semi': 'semi',
+    'Truck': 'truck',
+    'Van': 'van',
+    'Motorcycle': 'moto',
+    'Bus': 'bus'
+}
 
 # construct the argument parse and parse the arguments
 def run():
@@ -156,7 +167,7 @@ def run():
                     car, _created = Car.objects.get_or_create(
                         color=color,
                         license_plate=lp,
-                        style=car_type
+                        style=CAR_TYPES[car_type]
                     )
                     placement = CarPlacement.objects.create(
                         car=car,
